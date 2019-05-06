@@ -215,11 +215,5 @@ public class JsonUtil {
         return null;
     }
 
-    public static void main(String[] args) {
-        Map<String, Object> map = new HashMap<String, Object>();
-        map.put("userName", "Nick");
-        map.put("age", 28);
-        log.info(JsonUtil.toJson(map));
-    }
 
 }

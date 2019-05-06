@@ -8,15 +8,6 @@ import io.netty.handler.codec.http.HttpResponseStatus;
  * 类说明
  */
 public class ResultStatus {
-
-    @Override
-    public String toString() {
-        return "ResultStatus{" +
-                "success=" + success +
-                ", ResponseStatus=" + ResponseStatus +
-                '}';
-    }
-
     private boolean success;
 
     private HttpResponseStatus ResponseStatus;
@@ -47,5 +38,13 @@ public class ResultStatus {
 
     public void setResponseStatus(HttpResponseStatus responseStatus) {
         ResponseStatus = responseStatus;
+    }
+
+    @Override
+    public String toString() {
+        return "ResultStatus{" +
+                "success=" + success +
+                ", ResponseStatus=" + ResponseStatus +
+                '}';
     }
 }

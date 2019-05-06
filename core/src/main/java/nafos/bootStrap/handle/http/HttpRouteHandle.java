@@ -7,9 +7,9 @@ import nafos.bootStrap.handle.currency.Crc32MessageHandle;
 import nafos.bootStrap.handle.currency.ZlibMessageHandle;
 import nafos.core.Enums.Protocol;
 import nafos.core.Thread.ThreadLocalHelper;
-import nafos.core.entry.BusinessException;
 import nafos.core.entry.ClassAndMethod;
 import nafos.core.entry.HttpRouteClassAndMethod;
+import nafos.core.entry.error.BizException;
 import nafos.core.entry.http.ReqResBean;
 import nafos.core.helper.ClassAndMethodHelper;
 import nafos.core.helper.RequestHelper;
@@ -128,7 +128,7 @@ public class HttpRouteHandle {
             }
             return route.getMethod().invoke(SpringApplicationContextHolder.getSpringBeanForClass(route.getClazz()), route.getIndex(),
                     object);
-        } catch (BusinessException e) {
+        } catch (BizException e) {
             return new HttpResponseStatus(e.getCode(), e.getMessage());
         } catch (Exception e) {
             e.printStackTrace();
@@ -152,7 +152,7 @@ public class HttpRouteHandle {
         }
 
         if (route.getType() == Protocol.JSON) {
-            send(context, JsonUtil.toJson(object), request);
+            send(context, JsonUtil.toJsonIsNotNull(object), request);
         } else {
 
             //如果回传为null，则直接返回
@@ -202,7 +202,7 @@ public class HttpRouteHandle {
         }
         ThreadLocalHelper.threadLocalRemove();
 
-        if(ctx.channel().isActive())
-        ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
+        if (ctx.channel().isActive())
+            ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
     }
 }

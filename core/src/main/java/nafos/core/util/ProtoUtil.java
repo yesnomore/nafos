@@ -8,6 +8,7 @@ import org.objenesis.Objenesis;
 import org.objenesis.ObjenesisStd;
 
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -39,25 +40,17 @@ public class ProtoUtil {
 
     @SuppressWarnings("unchecked")
     public static <T> String serializeToString(T obj) {
-        Class<T> cls = (Class<T>) obj.getClass();
-        LinkedBuffer buffer = LinkedBuffer.allocate(LinkedBuffer.DEFAULT_BUFFER_SIZE);
         try {
-            Schema<T> schema = getSchema(cls);
-            return new String(ProtobufIOUtil.toByteArray(obj, schema, buffer), "ISO8859-1");
-        } catch (Exception e) {
+            return new String(serializeToByte(obj), "ISO8859-1");
+        } catch (UnsupportedEncodingException e) {
             throw new IllegalStateException(e.getMessage(), e);
-        } finally {
-            buffer.clear();
         }
     }
 
     public static <T> T deserializeFromString(String data, Class<T> cls) {
         try {
-            T message = (T) objenesis.newInstance(cls);
-            Schema<T> schema = getSchema(cls);
-            ProtobufIOUtil.mergeFrom(data.getBytes("ISO8859-1"), message, schema);
-            return message;
-        } catch (Exception e) {
+            return deserializeFromByte(data.getBytes("ISO8859-1"), cls);
+        } catch (UnsupportedEncodingException e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
     }

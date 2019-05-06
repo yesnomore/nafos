@@ -1,7 +1,6 @@
 
 package nafos.core.util;
 
-import nafos.bootStrap.NettyStartup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

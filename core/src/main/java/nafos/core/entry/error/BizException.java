@@ -1,26 +1,26 @@
-package nafos.core.entry;
+package nafos.core.entry.error;
 
 /**
  * @Author 黄新宇
  * @Date 2018/10/27 下午3:35
  * @Description TODO
  **/
-public class BusinessException extends RuntimeException {
+public class BizException extends RuntimeException {
 
     private Integer code;
     private String message;
 
-    public BusinessException() {
+    public BizException() {
     }
 
-    public BusinessException(String errmsg) {
+    public BizException(String errmsg) {
         super(errmsg);
-        this.code = 2;
+        this.code = 500;
         this.message = errmsg;
     }
 
 
-    public BusinessException(int code, String errmsg) {
+    public BizException(int code, String errmsg) {
         super(errmsg);
         this.code = code;
         this.message = errmsg;
