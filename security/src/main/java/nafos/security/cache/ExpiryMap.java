@@ -218,8 +218,10 @@ public class ExpiryMap<K, V> extends HashMap<K, V> {
 
             if (flag) {
                 super.remove(key);
-                expiryMap.remove(key);
+                iter.remove();
             }
         }
     }
+
 }
+
