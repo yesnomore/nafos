@@ -93,6 +93,17 @@ public class NsRequest extends BuildHttpObjectAggregator.AggregatedFullHttpReque
         return cookies;
     }
 
+    public String getCookie(String name) {
+        Iterator<Cookie> it = getCookies().iterator();
+        while (it.hasNext()) {
+            Cookie cookie = it.next();
+            if (cookie.name().equals(name)) {
+                return cookie.value();
+            }
+        }
+        return null;
+    }
+
 
     public String getNafosCookieId() {
         //H5跨域不能设置cookie问题，暂用此方法解决
@@ -109,19 +120,7 @@ public class NsRequest extends BuildHttpObjectAggregator.AggregatedFullHttpReque
         }
 
         //其他模拟器，安卓正常走流程
-        Iterator<Cookie> it = getCookies().iterator();
-        while (it.hasNext()) {
-            Cookie cookie = it.next();
-            if (cookie.name().equals(cookieStart)) {
-                try {
-                    securityCookieId = AESUtil.decrypt(cookie.value());
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                break;
-            }
-        }
-
+        securityCookieId = AESUtil.decrypt(getCookie(cookieStart));
         return securityCookieId;
     }
 
