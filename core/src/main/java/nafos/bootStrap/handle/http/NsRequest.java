@@ -40,41 +40,47 @@ public class NsRequest extends BuildHttpObjectAggregator.AggregatedFullHttpReque
         return requestParams().get(key);
     }
 
-    public int intQueryParam(String key) {
-        return CastUtil.castInt(requestParams().get(key));
+    public Integer intQueryParam(String key) {
+        String value = requestParams().get(key);
+        if (value == null) return null;
+        return Integer.valueOf(value);
     }
 
-    public boolean booleanQueryParam(String key) {
-        return CastUtil.castBoolean(requestParams().get(key));
+    public Boolean booleanQueryParam(String key) {
+        String value = requestParams().get(key);
+        if (value == null) return null;
+        return Boolean.valueOf(value);
     }
 
-    public long longQueryParam(String key) {
-        return CastUtil.castLong(requestParams().get(key));
-    }
-
-    public Object objectQueryParam(String key) {
-        return requestParams().get(key);
+    public Long longQueryParam(String key) {
+        String value = requestParams().get(key);
+        if (value == null) return null;
+        return Long.valueOf(value);
     }
 
 
     public String stringBodyParam(String key) {
-        return CastUtil.castString(bodyParams().get(key));
+        Object value = bodyParams().get(key);
+        if (value == null) return null;
+        return String.valueOf(value);
     }
 
-    public int intBodyParam(String key) {
-        return CastUtil.castInt(bodyParams().get(key));
+    public Integer intBodyParam(String key) {
+        Object value = bodyParams().get(key);
+        if (value == null) return null;
+        return Integer.valueOf(value.toString());
     }
 
-    public boolean booleanBodyParam(String key) {
-        return CastUtil.castBoolean(bodyParams().get(key));
+    public Boolean booleanBodyParam(String key) {
+        Object value = bodyParams().get(key);
+        if (value == null) return null;
+        return Boolean.valueOf(value.toString());
     }
 
-    public long longBodyParam(String key) {
-        return CastUtil.castLong(bodyParams().get(key));
-    }
-
-    public Object objectBodyParam(String key) {
-        return bodyParams().get(key);
+    public Long longBodyParam(String key) {
+        Object value = bodyParams().get(key);
+        if (value == null) return null;
+        return Long.valueOf(value.toString());
     }
 
 
