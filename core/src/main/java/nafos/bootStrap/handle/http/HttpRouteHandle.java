@@ -129,7 +129,7 @@ public class HttpRouteHandle {
             return route.getMethod().invoke(SpringApplicationContextHolder.getSpringBeanForClass(route.getClazz()), route.getIndex(),
                     object);
         } catch (BizException e) {
-            return new HttpResponseStatus(e.getCode(), e.getMessage());
+            return e;
         } catch (Exception e) {
             e.printStackTrace();
             return HttpResponseStatus.INTERNAL_SERVER_ERROR;
@@ -145,6 +145,11 @@ public class HttpRouteHandle {
      */
     private void sendMethod(HttpRouteClassAndMethod route, Object object, ChannelHandlerContext context, FullHttpRequest request) {
         //error处理
+        if (object instanceof BizException) {
+            request.release();
+            NettyUtil.sendError(context, (BizException) object);
+            return;
+        }
         if (object instanceof HttpResponseStatus) {
             request.release();
             NettyUtil.sendError(context, (HttpResponseStatus) object);
