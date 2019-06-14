@@ -22,9 +22,9 @@ public class NettyUtil {
         // 构造响应体
         JSONObject object = new JSONObject();
         object.put("error", status.code());
-        object.put("status", status.reasonPhrase());
+        object.put("msg", status.reasonPhrase());
         // 设置到response对象
-        final FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, status,
+        final FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, HttpResponseStatus.INTERNAL_SERVER_ERROR,
                 Unpooled.copiedBuffer(object.toString(), CharsetUtil.UTF_8));
         response.headers().set(CONTENT_TYPE, "application/json;charset=UTF-8");
         response.headers().set(CONTENT_LENGTH, response.content().readableBytes());
