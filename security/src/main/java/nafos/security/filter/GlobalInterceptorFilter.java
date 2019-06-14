@@ -5,6 +5,7 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.util.AttributeKey;
 import nafos.bootStrap.handle.http.NsRequest;
 import nafos.core.entry.ResultStatus;
+import nafos.core.entry.error.BizException;
 import nafos.core.mode.interceptor.InterceptorInterface;
 import nafos.security.SecurityUtil;
 import org.springframework.stereotype.Component;
@@ -24,7 +25,7 @@ public class GlobalInterceptorFilter implements InterceptorInterface {
         //	1)登录验证
         if(!SecurityUtil.isLogin(cookieId)){
             resultStatus.setSuccess(false);
-            resultStatus.setResponseStatus(HttpResponseStatus.FORBIDDEN);
+            resultStatus.setBizException(BizException.LOGIN_SESSION_TIME_OUT);
             return resultStatus;
         }
         //	1.1)更新session存活时间
@@ -41,7 +42,7 @@ public class GlobalInterceptorFilter implements InterceptorInterface {
         //	1)登录验证
         if(!SecurityUtil.isLogin(cookieId)){
             resultStatus.setSuccess(false);
-            resultStatus.setResponseStatus(HttpResponseStatus.FORBIDDEN);
+            resultStatus.setBizException(BizException.LOGIN_SESSION_TIME_OUT);
             return resultStatus;
         }
         //	1.1)更新session存活时间
