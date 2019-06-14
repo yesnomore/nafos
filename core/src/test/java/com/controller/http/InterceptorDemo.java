@@ -1,9 +1,9 @@
 package com.controller.http;
 
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.http.HttpResponseStatus;
 import nafos.bootStrap.handle.http.NsRequest;
 import nafos.core.entry.ResultStatus;
+import nafos.core.entry.error.BizException;
 import nafos.core.mode.interceptor.AbstractHttpInterceptor;
 import org.springframework.stereotype.Component;
 
@@ -14,7 +14,7 @@ public class InterceptorDemo extends AbstractHttpInterceptor {
         if("hello".equals(req.stringQueryParam("hello"))){
             return new ResultStatus(true);
         }else{
-            return new ResultStatus(false, HttpResponseStatus.INTERNAL_SERVER_ERROR);
+            return new ResultStatus(false, BizException.LOGIN_SESSION_TIME_OUT);
         }
     }
 }

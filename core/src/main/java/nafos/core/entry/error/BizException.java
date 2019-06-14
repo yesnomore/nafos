@@ -10,6 +10,8 @@ public class BizException extends RuntimeException {
     private Integer code;
     private String message;
 
+    public static BizException LOGIN_SESSION_TIME_OUT = new BizException(600,"登录失效，请重新登录");
+
     public BizException() {
     }
 

@@ -1,6 +1,6 @@
 package nafos.core.entry;
 
-import io.netty.handler.codec.http.HttpResponseStatus;
+import nafos.core.entry.error.BizException;
 
 /**
  * @author 作者 huangxinyu
@@ -10,7 +10,7 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 public class ResultStatus {
     private boolean success;
 
-    private HttpResponseStatus ResponseStatus;
+    private BizException bizException;
 
     public ResultStatus() {
     }
@@ -19,9 +19,9 @@ public class ResultStatus {
         this.success = success;
     }
 
-    public ResultStatus(boolean success, HttpResponseStatus responseStatus) {
+    public ResultStatus(boolean success, BizException bizException) {
         this.success = success;
-        ResponseStatus = responseStatus;
+        this.bizException = bizException;
     }
 
     public boolean isSuccess() {
@@ -32,19 +32,19 @@ public class ResultStatus {
         this.success = success;
     }
 
-    public HttpResponseStatus getResponseStatus() {
-        return ResponseStatus;
+    public BizException getBizException() {
+        return bizException;
     }
 
-    public void setResponseStatus(HttpResponseStatus responseStatus) {
-        ResponseStatus = responseStatus;
+    public void setBizException(BizException bizException) {
+        this.bizException = bizException;
     }
 
     @Override
     public String toString() {
         return "ResultStatus{" +
                 "success=" + success +
-                ", ResponseStatus=" + ResponseStatus +
+                ", bizException=" + bizException +
                 '}';
     }
 }
