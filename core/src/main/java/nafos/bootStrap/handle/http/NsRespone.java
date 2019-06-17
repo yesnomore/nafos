@@ -10,6 +10,7 @@ import io.netty.util.AsciiString;
 import nafos.core.util.AESUtil;
 import nafos.core.util.SnowflakeIdWorker;
 
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,7 +34,7 @@ public class NsRespone extends DefaultFullHttpResponse {
     }
 
     public NsRespone setNafosCookieId(String value) {
-        cookies.add(new DefaultCookie("nafosCookie", value));
+        cookies.add(new DefaultCookie("nafosCookie", URLEncoder.encode(value)));
         return this;
     }
 

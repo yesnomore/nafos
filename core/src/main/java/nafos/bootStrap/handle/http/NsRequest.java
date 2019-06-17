@@ -17,6 +17,8 @@ import org.apache.commons.beanutils.BeanUtils;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.util.*;
 
 public class NsRequest extends BuildHttpObjectAggregator.AggregatedFullHttpRequest {
@@ -118,7 +120,7 @@ public class NsRequest extends BuildHttpObjectAggregator.AggregatedFullHttpReque
                 !headers().get(cookieStart).equals("null") &&
                 !headers().get(cookieStart).equals("[object Null]")) {
             try {
-                securityCookieId = AESUtil.decrypt(headers().get(cookieStart));
+                securityCookieId = AESUtil.decrypt(URLDecoder.decode(headers().get(cookieStart)));
                 return securityCookieId;
             } catch (Exception e) {
                 e.printStackTrace();
@@ -126,7 +128,7 @@ public class NsRequest extends BuildHttpObjectAggregator.AggregatedFullHttpReque
         }
 
         //其他模拟器，安卓正常走流程
-        securityCookieId = AESUtil.decrypt(getCookie(cookieStart));
+        securityCookieId = AESUtil.decrypt(URLDecoder.decode(getCookie(cookieStart)));
         return securityCookieId;
     }
 
