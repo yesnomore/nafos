@@ -173,6 +173,7 @@ public class NsRequest extends BuildHttpObjectAggregator.AggregatedFullHttpReque
     private Map<String, Object> getJSONParams() {
         ByteBuf jsonBuf = content();
         String jsonStr = jsonBuf.toString(CharsetUtil.UTF_8);
+        if(jsonStr == null || jsonStr.trim().length() == 0) return new HashMap<>();
         return JsonUtil.jsonToMap(jsonStr);
     }
 
