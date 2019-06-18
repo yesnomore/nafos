@@ -22,8 +22,8 @@ public class NettyUtil {
     public static void sendError(ChannelHandlerContext ctx, HttpResponseStatus status) {
         // 构造响应体
         JSONObject object = new JSONObject();
-        object.put("error", status.code());
-        object.put("msg", status.reasonPhrase());
+        object.put("code", status.code());
+        object.put("message", status.reasonPhrase());
         // 设置到response对象
         final FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, status,
                 Unpooled.copiedBuffer(object.toString(), CharsetUtil.UTF_8));
