@@ -5,8 +5,11 @@ import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.FullHttpResponse;
+import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.util.CharsetUtil;
+import nafos.bootStrap.handle.http.NsRespone;
+import nafos.core.Thread.ThreadLocalHelper;
 import nafos.core.entry.error.BizException;
 import net.sf.json.JSONObject;
 import org.slf4j.Logger;
@@ -22,14 +25,16 @@ public class NettyUtil {
     public static void sendError(ChannelHandlerContext ctx, HttpResponseStatus status) {
         // 构造响应体
         JSONObject object = new JSONObject();
-        object.put("code", status.code());
+        object.put("error", status.code());
         object.put("message", status.reasonPhrase());
         // 设置到response对象
         final FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, status,
                 Unpooled.copiedBuffer(object.toString(), CharsetUtil.UTF_8));
+        response.headers().set("Access-Control-Allow-Origin", "*");
         response.headers().set(CONTENT_TYPE, "application/json;charset=UTF-8");
         response.headers().set(CONTENT_LENGTH, response.content().readableBytes());
         response.headers().set(SERVER, "NAFOS-SERVER");
+        ThreadLocalHelper.threadLocalRemove();
         ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
     }
 
@@ -37,8 +42,9 @@ public class NettyUtil {
         // 设置到response对象
         final FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, HttpResponseStatus.INTERNAL_SERVER_ERROR,
                 Unpooled.copiedBuffer(bizException.toString(), CharsetUtil.UTF_8));
-        response.headers().set(CONTENT_TYPE, "application/json;charset=UTF-8");
-        response.headers().set(CONTENT_LENGTH, response.content().readableBytes());
+        response.headers().set("Access-Control-Allow-Origin", "*");
+        response.headers().set(HttpHeaderNames.CONTENT_TYPE, "application/json;charset=UTF-8");
+        ThreadLocalHelper.threadLocalRemove();
         response.headers().set(SERVER, "NAFOS-SERVER");
         ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
     }
@@ -55,7 +61,7 @@ public class NettyUtil {
                 Unpooled.copiedBuffer(object.toString(), CharsetUtil.UTF_8));
         //设置头部
         response.headers().set("Access-Control-Allow-Origin", "*");
-        response.headers().set("Access-Control-Allow-Headers", "content-type,GoSessionId");
+        response.headers().set("Access-Control-Allow-Headers", "*");
         response.headers().set("Access-Control-Allow-Methods", "PUT,POST,GET,DELETE,OPTIONS");
 
         // 发送

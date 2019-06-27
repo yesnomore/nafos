@@ -85,6 +85,10 @@ public class Client {
         this.gameUserInfo = gameUserInfo;
     }
 
+    public BaseUser getUser() {
+        return gameUserInfo;
+    }
+
     public String getRoomId() {
         return getRoom().getRoomId();
     }

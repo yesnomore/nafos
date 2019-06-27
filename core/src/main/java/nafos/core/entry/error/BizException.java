@@ -48,7 +48,7 @@ public class BizException extends RuntimeException {
     @Override
     public String toString() {
         return "{" +
-                "\"code\":" + code +
+                "\"error\":" + code +
                 ", \"message\":\"" + message + "\"" + "}";
     }
 }
