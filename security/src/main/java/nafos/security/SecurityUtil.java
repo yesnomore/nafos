@@ -39,17 +39,16 @@ public class SecurityUtil {
      * @return
      */
     public static <T> T getLoginUser(String sessionId, Class<T> cls) {
-        Object obj = CacheMapDao.doReadCache(sessionId);
+        T obj = (T)CacheMapDao.doReadCache(sessionId);
         if (ObjectUtil.isNotNull(obj)) {
-            return (T) obj;
+            return  obj;
         } else {
             if (!isUseRedis)
                 return null;
-            obj = RedisSessionDao.doReadSession(sessionId);
+            obj = RedisSessionDao.doReadSession(sessionId,cls);
             if (ObjectUtil.isNotNull(obj)) {
-                T t = ProtoUtil.deserializeFromString((String) obj, cls);
-                CacheMapDao.saveCache(sessionId, t);
-                return t;
+                CacheMapDao.saveCache(sessionId, obj);
+                return obj;
             }
             return null;
         }
@@ -107,10 +106,11 @@ public class SecurityUtil {
      * @return
      */
     public static boolean isLogin(String sessionId) {
-        Object obj = CacheMapDao.doReadCache(sessionId);
-        if (ObjectUtil.isNull(obj) && isUseRedis)
-            obj = RedisSessionDao.doReadSession(sessionId);
-        return ObjectUtil.isNotNull(obj);
+        boolean exists = CacheMapDao.exists(sessionId);
+        if(exists) return true;
+        if (isUseRedis)
+            return RedisSessionDao.existsSession(sessionId);
+        return false;
     }
 
 

@@ -439,6 +439,20 @@ public class RedisUtil {
 			returnResource(jedis);
 		}
 	}
+
+	public static long llen(String key){
+		ShardedJedis jedis = null;
+		try {
+			jedis = getShardedJedis();
+			if (jedis != null) {
+				return jedis.llen(key);
+			} else {
+				return 0;
+			}
+		}finally {
+			returnResource(jedis);
+		}
+	}
 	//*************** 操作list****************end
 	
 	//*************** 操作map****************start
@@ -696,6 +710,19 @@ public class RedisUtil {
 		try {
 			jedis = getJedis();
 			return jedis.incrBy(key, value);
+		} catch (Exception e) {
+			logger.error(e.toString());
+			return 0;
+		} finally {
+			returnResource(jedis);
+		}
+	}
+
+	public static long expire(String key, int timeout){
+		Jedis jedis = null;
+		try {
+			jedis = getJedis();
+			return jedis.expire(key, timeout);
 		} catch (Exception e) {
 			logger.error(e.toString());
 			return 0;

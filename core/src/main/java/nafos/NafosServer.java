@@ -50,7 +50,7 @@ public class NafosServer {
 
     private static ApplicationContext ac = null;
 
-    private  Class runClazz;
+    private Class runClazz;
 
     private boolean isInit;
 
@@ -63,9 +63,9 @@ public class NafosServer {
         runClazz = clazz;
     }
 
-    private NafosServer init(){
-        synchronized (this){
-            if(isInit){
+    private NafosServer init() {
+        synchronized (this) {
+            if (isInit) {
                 return this;
             }
             isInit = true;

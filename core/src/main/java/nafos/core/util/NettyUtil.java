@@ -8,7 +8,6 @@ import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.util.CharsetUtil;
-import nafos.bootStrap.handle.http.NsRespone;
 import nafos.core.Thread.ThreadLocalHelper;
 import nafos.core.entry.error.BizException;
 import net.sf.json.JSONObject;
@@ -33,19 +32,17 @@ public class NettyUtil {
         response.headers().set("Access-Control-Allow-Origin", "*");
         response.headers().set(CONTENT_TYPE, "application/json;charset=UTF-8");
         response.headers().set(CONTENT_LENGTH, response.content().readableBytes());
-        response.headers().set(SERVER, "NAFOS-SERVER");
         ThreadLocalHelper.threadLocalRemove();
         ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
     }
 
     public static void sendError(ChannelHandlerContext ctx, BizException bizException) {
         // 设置到response对象
-        final FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, HttpResponseStatus.INTERNAL_SERVER_ERROR,
+        final FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, HttpResponseStatus.valueOf(bizException.getStatus()),
                 Unpooled.copiedBuffer(bizException.toString(), CharsetUtil.UTF_8));
         response.headers().set("Access-Control-Allow-Origin", "*");
         response.headers().set(HttpHeaderNames.CONTENT_TYPE, "application/json;charset=UTF-8");
         ThreadLocalHelper.threadLocalRemove();
-        response.headers().set(SERVER, "NAFOS-SERVER");
         ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
     }
 

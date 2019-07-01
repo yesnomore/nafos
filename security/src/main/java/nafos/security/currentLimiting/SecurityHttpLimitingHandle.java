@@ -5,14 +5,12 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import nafos.core.util.NettyUtil;
-import nafos.core.util.ObjectUtil;
-import nafos.security.redis.RedisLock;
-import nafos.security.redis.RedisUtil;
+import nafos.security.redis.SessionForRedis;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import redis.clients.jedis.Jedis;
 
 import java.net.InetSocketAddress;
 import java.util.LinkedList;
@@ -43,10 +41,13 @@ public class SecurityHttpLimitingHandle extends ChannelInboundHandlerAdapter {
     @Value("${nafos.security.alllimitCount:0}")
     public int alllimitCount;
 
+    @Autowired
+    SessionForRedis sessionForRedis;
 
-    private final String allLimitingKey = "allLimiting";
 
-    private static String IPLimitingkey = "ipLimit";
+    private final String allLimitingKey = "allLimiting:";
+
+    private static String IPLimitingkey = "ipLimit:";
 
     private LinkedList<Long> tcpCount = new LinkedList();
 
@@ -120,27 +121,17 @@ public class SecurityHttpLimitingHandle extends ChannelInboundHandlerAdapter {
      * @return
      */
     public boolean allLimitingForRedis(Long millisecond, Integer limitCount) {
-        String currentLimitingLock = RedisLock.lockWithTimeout(allLimitingKey, 300, 1000);
-        Jedis jedis = null;
-        try {
-            jedis = RedisUtil.getJedis();
-            if (ObjectUtil.isNotNull(currentLimitingLock)) {
-                Long llen = jedis.llen(allLimitingKey);
-                if (llen < limitCount) {
-                    jedis.lpush(allLimitingKey, System.currentTimeMillis() + "");
-                    return true;
-                } else {
-                    Long lastTime = Long.parseLong(jedis.lindex(allLimitingKey, -1));
-                    if ((System.currentTimeMillis() - lastTime) >= millisecond) {
-                        jedis.lpush(allLimitingKey, System.currentTimeMillis() + "");
-                        jedis.ltrim(allLimitingKey, 0, limitCount);
-                        return true;
-                    }
-                }
+        Long llen = sessionForRedis.llen(allLimitingKey);
+        if (llen < limitCount) {
+            sessionForRedis.lpush(allLimitingKey, System.currentTimeMillis() + "");
+            return true;
+        } else {
+            Long lastTime = Long.parseLong(jedis.lindex(allLimitingKey, -1));
+            if ((System.currentTimeMillis() - lastTime) >= millisecond) {
+                sessionForRedis.lpush(allLimitingKey, System.currentTimeMillis() + "");
+                jedis.ltrim(allLimitingKey, 0, limitCount);
+                return true;
             }
-        } finally {
-            RedisUtil.returnResource(jedis);
-            RedisLock.releaseLock(allLimitingKey, currentLimitingLock);
         }
         return false;
     }
@@ -200,17 +191,8 @@ public class SecurityHttpLimitingHandle extends ChannelInboundHandlerAdapter {
      * @return
      */
     public long incrIpProtocCount(String ip, int timeOut) {
-        Jedis jedis = null;
-        long count = 0;
-        try {
-            jedis = RedisUtil.getJedis();
-            count = jedis.incr(IPLimitingkey + ip);
-            if (count == 1) {
-                jedis.expire(IPLimitingkey + ip, timeOut);
-            }
-        } finally {
-            RedisUtil.returnResource(jedis);
-        }
+        long count = sessionForRedis.inc(IPLimitingkey + ip);
+        if (count == 1) sessionForRedis.expire(IPLimitingkey + ip, timeOut);
         return count;
     }
 

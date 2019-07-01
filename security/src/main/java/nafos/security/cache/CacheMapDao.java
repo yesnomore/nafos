@@ -59,6 +59,16 @@ public class CacheMapDao {
         return obj;
     }
 
+    /**
+     * 判断是否存在key
+     */
+    public static boolean exists(String sessionId){
+        if(sessionId == null){
+            return false;
+        }
+        return exMap.containsKey(RedisKey.CACHEKEY + sessionId);
+    }
+
 
     /**
      * 保存cache,session并存储过期时间

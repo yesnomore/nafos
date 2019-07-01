@@ -10,11 +10,11 @@
 
     <dependencies>
 
-        <!-- redis  -->
+        <!-- redisson -->
         <dependency>
-            <groupId>redis.clients</groupId>
-            <artifactId>jedis</artifactId>
-            <version>2.9.0</version>
+            <groupId>org.redisson</groupId>
+            <artifactId>redisson</artifactId>
+            <version>3.5.7</version>
         </dependency>
         <dependency>
             <groupId>hxy</groupId>
