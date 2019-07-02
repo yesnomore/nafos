@@ -1,16 +1,13 @@
 package nafos.security;
 
 import nafos.core.entry.ClassAndMethod;
+import nafos.core.entry.error.BizException;
 import nafos.core.helper.SpringApplicationContextHolder;
 import nafos.core.mode.InitMothods;
-import nafos.core.util.CastUtil;
 import nafos.core.util.ObjectUtil;
-import nafos.core.util.ProtoUtil;
 import nafos.security.cache.CacheMapDao;
 import nafos.security.cache.RedisSessionDao;
 import nafos.security.config.SecurityConfig;
-import nafos.security.redis.RedisKey;
-import nafos.security.redis.RedisUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,19 +32,19 @@ public class SecurityUtil {
      * 获取登录用户
      *
      * @param sessionId
-     * @param cls
      * @return
      */
-    public static <T> T getLoginUser(String sessionId, Class<T> cls) {
-        T obj = (T)CacheMapDao.doReadCache(sessionId);
+    public static <T> T getLoginUser(String sessionId) {
+        T obj = (T) CacheMapDao.doReadCache(sessionId);
         if (ObjectUtil.isNotNull(obj)) {
-            return  obj;
+            return obj;
         } else {
             if (!isUseRedis)
                 return null;
-            obj = RedisSessionDao.doReadSession(sessionId,cls);
+            obj = RedisSessionDao.doReadSession(sessionId);
             if (ObjectUtil.isNotNull(obj)) {
                 CacheMapDao.saveCache(sessionId, obj);
+                CacheMapDao.saveTimeCache(sessionId, RedisSessionDao.doReadSessionTime(sessionId));
                 return obj;
             }
             return null;
@@ -62,8 +59,10 @@ public class SecurityUtil {
      */
     public static void setLoginUser(String sessionId, Object obj) {
         CacheMapDao.saveCache(sessionId, obj);
-        if (isUseRedis)
+        CacheMapDao.saveCache(sessionId, System.currentTimeMillis());
+        if (isUseRedis) {
             RedisSessionDao.saveSession(sessionId, obj);
+        }
     }
 
     /**
@@ -71,7 +70,7 @@ public class SecurityUtil {
      *
      * @param <T>
      */
-    public static <T> Collection<T> getBaseActiveLoginUser(Class<T> cls) {
+    public static <T> Collection<T> getBaseActiveLoginUser() {
         Set<T> sessions = (Set<T>) CacheMapDao.getActiveCache();
         return sessions;
     }
@@ -81,13 +80,8 @@ public class SecurityUtil {
      *
      * @param <T>
      */
-    public static <T> Collection<T> getAllActiveLoginUser(Class<T> cls) {
-        Set<T> sessions = new HashSet<>();
-        Set<String> keys = RedisSessionDao.getActiveSessions();
-        for (String key : keys) {
-            sessions.add(ProtoUtil.deserializeFromString((String) RedisUtil.get(key), cls));
-        }
-        return sessions;
+    public static <T> Collection<T> getAllActiveLoginUser() {
+        return (Collection<T>) RedisSessionDao.getActiveSessions();
     }
 
     //注销
@@ -95,7 +89,7 @@ public class SecurityUtil {
         if (isUseRedis) {
             RedisSessionDao.delete(sessionId);
         } else {
-            CacheMapDao.deleteCache(RedisKey.CACHEKEY + sessionId);
+            CacheMapDao.deleteCache(sessionId);
         }
     }
 
@@ -107,7 +101,7 @@ public class SecurityUtil {
      */
     public static boolean isLogin(String sessionId) {
         boolean exists = CacheMapDao.exists(sessionId);
-        if(exists) return true;
+        if (exists) return true;
         if (isUseRedis)
             return RedisSessionDao.existsSession(sessionId);
         return false;
@@ -120,11 +114,12 @@ public class SecurityUtil {
      * @param sessionId
      */
     public static void updateSessionTime(String sessionId) {
-        if (ObjectUtil.isNull(sessionId)) return;
+        if (ObjectUtil.isNull(sessionId)) throw BizException.LOGIN_SESSION_TIME_OUT;
         if (CacheMapDao.isFourFifthsExpiryTime(sessionId)) {
-            if (isUseRedis)
+            CacheMapDao.saveTimeCache(sessionId, System.currentTimeMillis());
+            if (isUseRedis) {
                 RedisSessionDao.update(sessionId);
-            CacheMapDao.setExpiryTime(RedisKey.CACHEKEY + sessionId);
+            }
             //附带的外置操作
             ClassAndMethod route = InitMothods.getFilter("sessionUpdate");
             route.getMethod().invoke(SpringApplicationContextHolder.getSpringBeanForClass(route.getClazz()), route.getIndex(),

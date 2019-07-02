@@ -5,7 +5,6 @@ import nafos.bootStrap.handle.http.NsRespone;
 import nafos.core.annotation.Controller;
 import nafos.core.annotation.http.Get;
 import nafos.core.annotation.http.RequestParam;
-import nafos.security.SecurityController;
 
 @Controller
 public class TestController {

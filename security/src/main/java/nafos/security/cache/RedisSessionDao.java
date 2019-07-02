@@ -1,16 +1,18 @@
 package nafos.security.cache;
 
+import nafos.core.entry.error.BizException;
 import nafos.core.helper.SpringApplicationContextHolder;
-import nafos.core.util.ProtoUtil;
 import nafos.security.config.SecurityConfig;
-import nafos.security.redis.RedisKey;
-import nafos.security.redis.RedisUtil;
-import nafos.security.redis.SessionForRedis;
+import nafos.security.redis.RedissonManager;
+import nafos.security.redis.SecurityUpdateListener;
+import org.redisson.api.RBatch;
+import org.redisson.api.RBucket;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import redis.clients.jedis.Jedis;
 
+import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author huangxinyu
@@ -23,48 +25,28 @@ public class RedisSessionDao {
 
     private static int sessionTimeout;
 
-    private static SessionForRedis sessionForRedis;
+
+    public static final String SESSIONKEY = "nafos:security:sessionId:";
+
+    public static final String SESSIONKEY_TIME = "nafos:security:sessionId:time";
 
 
     static {
         sessionTimeout = SpringApplicationContextHolder.getSpringBeanForClass(SecurityConfig.class).getSessionTimeOut();
-        sessionForRedis = SpringApplicationContextHolder.getSpringBeanForClass(SessionForRedis.class);
     }
 
 
     public static void update(String sessionId) {
-        //通知其他服务器，修改session时间
-        Jedis jedis = null;
-        try {
-            jedis = RedisUtil.getJedis();
-            if (jedis != null) {
-                jedis.expire(RedisKey.SESSIONKEY + sessionId, sessionTimeout);//修改redis的过期时间
-                jedis.publish("LoginSessionUpdate", sessionId);
-            }
-        } catch (Exception e) {
-            logger.error(e.toString());
-        } finally {
-            RedisUtil.returnResource(jedis);
-        }
+        RedissonManager.getRedisson().getBucket(SESSIONKEY + sessionId).expire(sessionTimeout, TimeUnit.SECONDS);
+        RedissonManager.getRedisson().getBucket(SESSIONKEY_TIME + sessionId).expire(sessionTimeout, TimeUnit.SECONDS);
     }
 
     /**
      * 删除session
      */
     public static void delete(String sessionId) {
-        sessionForRedis.del(RedisKey.SESSIONKEY + sessionId);
-        //通知其他服务器，删除session
-        Jedis jedis = null;
-        try {
-            jedis = RedisUtil.getJedis();
-            if (jedis != null) {
-                jedis.publish("LoginSessionDelete", sessionId);
-            }
-        } catch (Exception e) {
-            logger.error(e.toString());
-        } finally {
-            RedisUtil.returnResource(jedis);
-        }
+        RedissonManager.getRedisson().getBucket(SESSIONKEY + sessionId).delete();
+        SecurityUpdateListener.publishDel(sessionId);
     }
 
     /**
@@ -74,29 +56,42 @@ public class RedisSessionDao {
      * @return
      */
     public static boolean existsSession(String sessionId) {
-        return sessionForRedis.exists(RedisKey.SESSIONKEY + sessionId);
+        return RedissonManager.getRedisson().getBucket(SESSIONKEY + sessionId).isExists();
     }
 
     /**
      * 获取存活的sessions
      */
-    public static Set<String> getActiveSessions() {
-        return sessionForRedis.keys(RedisKey.SESSIONKEY + "*");
+    public static Set<Object> getActiveSessions() {
+        Set<Object> set = new HashSet<>();
+        for (RBucket<Object> objectRBucket : RedissonManager.getRedisson().getBuckets().find(SESSIONKEY + "*")) {
+            set.add(objectRBucket.get());
+        }
+        return set;
     }
 
 
     /**
      * 获取session
      */
-    public static <T> T doReadSession(String sessionId, Class<T> clazz) {
+    public static <T> T doReadSession(String sessionId) {
         if (sessionId == null) {
-            return null;
+            throw BizException.LOGIN_SESSION_TIME_OUT;
         }
-        T t = sessionForRedis.get(RedisKey.SESSIONKEY + sessionId, clazz);
-        if (t == null) {
-            return null;
-        }
+        T t = (T) RedissonManager.getRedisson().getBucket(SESSIONKEY + sessionId);
         return t;
+    }
+
+    /**
+     * 获取session的创建时间
+     * @param sessionId
+     * @return
+     */
+    public static Long doReadSessionTime(String sessionId) {
+        if (sessionId == null) {
+            throw BizException.LOGIN_SESSION_TIME_OUT;
+        }
+        return (Long) RedissonManager.getRedisson().getBucket(SESSIONKEY_TIME + sessionId).get();
     }
 
 
@@ -112,9 +107,14 @@ public class RedisSessionDao {
             return;
         }
         //设置过期时间
-        int expireTime = sessionTimeout;
-        String uiui = ProtoUtil.serializeToString(obj);
-        sessionForRedis.setex(RedisKey.SESSIONKEY + sessionId, uiui, expireTime);
+        RBatch batch = RedissonManager.getRedisson().createBatch();
+        RBucket<Object> bucket = (RBucket<Object>) batch.getBucket(SESSIONKEY + sessionId);
+        RBucket<Object> bucketTime = (RBucket<Object>) batch.getBucket(SESSIONKEY_TIME + sessionId);
+        bucket.set(obj);
+        bucket.expire(sessionTimeout, TimeUnit.SECONDS);
+        bucketTime.set(System.currentTimeMillis());
+        bucket.expire(sessionTimeout, TimeUnit.SECONDS);
+        batch.execute();
     }
 
 

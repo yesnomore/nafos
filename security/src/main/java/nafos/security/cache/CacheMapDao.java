@@ -1,13 +1,16 @@
 package nafos.security.cache;
 
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import nafos.core.helper.SpringApplicationContextHolder;
+import nafos.security.SecurityUtil;
 import nafos.security.config.SecurityConfig;
-import nafos.security.redis.RedisKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author 作者 huangxinyu
@@ -17,31 +20,45 @@ import java.util.Set;
 public class CacheMapDao {
     private static Logger logger = LoggerFactory.getLogger(CacheMapDao.class);
 
-    private static int sessTimeOut;
+    private static Cache<String, Object> securityCache;
 
-    static {
-        sessTimeOut = SpringApplicationContextHolder.getSpringBeanForClass(SecurityConfig.class).getSessionTimeOut();
+    private static Cache<String, Long> securityTimeCache;
+
+    private static int sessionTimeout = SpringApplicationContextHolder.getSpringBeanForClass(SecurityConfig.class).getSessionTimeOut();
+
+    public static void init() {
+        init(1, TimeUnit.HOURS, 1000);
     }
 
-    private static ExpiryMap<String, Object> exMap = new ExpiryMap<>(1024, sessTimeOut * 1000L);
-
-
-    public static void updateCacheAndSession(String sessionId, Object obj) {
-        saveCache(sessionId, obj);
+    public static void init(long timeOut, TimeUnit unit, int max) {
+        securityCache = Caffeine.newBuilder().expireAfterWrite(timeOut, unit).expireAfterAccess(timeOut, unit).maximumSize(max).build();
+        securityTimeCache = Caffeine.newBuilder().expireAfterWrite(timeOut, unit).expireAfterAccess(timeOut, unit).maximumSize(max).build();
     }
+
+    private static Cache<String, Object> getSecurityCache() {
+        if (securityCache == null) {
+            synchronized (CacheMapDao.class) {
+                if (securityCache == null) {
+                    init();
+                }
+            }
+        }
+        return securityCache;
+    }
+
 
     /**
      * 删除session和cache
      */
     public static void deleteCache(String sessionId) {
-        exMap.del(RedisKey.CACHEKEY + sessionId);
+        getSecurityCache().invalidate(sessionId);
     }
 
     /**
      * 获取存活的Cache
      */
     public static Set<Object> getActiveCache() {
-        return (Set<Object>) exMap.values();
+        return (Set<Object>) getSecurityCache().asMap().values();
     }
 
 
@@ -52,21 +69,17 @@ public class CacheMapDao {
         if (sessionId == null) {
             return null;
         }
-        Object obj = exMap.get(RedisKey.CACHEKEY + sessionId);
-        if (obj == null) {
-            return null;
-        }
-        return obj;
+        return getSecurityCache().getIfPresent(sessionId);
     }
 
     /**
      * 判断是否存在key
      */
-    public static boolean exists(String sessionId){
-        if(sessionId == null){
+    public static boolean exists(String sessionId) {
+        if (sessionId == null) {
             return false;
         }
-        return exMap.containsKey(RedisKey.CACHEKEY + sessionId);
+        return getSecurityCache().getIfPresent(sessionId) == null;
     }
 
 
@@ -81,47 +94,39 @@ public class CacheMapDao {
             logger.error("要存入的session-velue为空");
             return;
         }
-        exMap.put(RedisKey.CACHEKEY + sessionId, obj);
+        getSecurityCache().put(sessionId, obj);
+    }
+
+    public static void saveTimeCache(String sessionId, long time) {
+        securityTimeCache.put(sessionId, time);
     }
 
     /**
-     * 是否超过过期时间的4/5
-     *
-     * @param key
-     * @return
+     * 销毁
      */
-    public static boolean isFourFifthsExpiryTime(Object key) {
-        return exMap.isFourFifthsExpiryTime(key);
+    public static void destory() {
+        getSecurityCache().invalidateAll();
+        if (securityTimeCache != null) securityTimeCache.invalidateAll();
     }
 
     /**
-     * 重新设置过期时间
+     * 是否超出存活时间的4/5
      *
      * @param sessionId
+     * @return
      */
-    public static void setExpiryTime(String sessionId) {
-        exMap.setExpiryTime(sessionId);
-    }
-
-    /**
-     * 删除失效的key-value
-     */
-    public static void delTimeOut() {
-        exMap.delTimeOut();
-    }
-
-    public static void cronDelTimeOut(long millisecond){
-        new Thread(()->{
-            while (true) {
-                try {
-                    Thread.sleep(millisecond);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                delTimeOut();
-                logger.debug("清除cacheMap中login信息, 【over】");
+    public static boolean isFourFifthsExpiryTime(String sessionId) {
+        Long time = securityTimeCache.getIfPresent(sessionId);
+        if (time == null) {
+            SecurityUtil.getLoginUser(sessionId);
+            time = securityTimeCache.getIfPresent(sessionId);
+            if (time == null) {
+                // 时间已经完全到期，加不了了返回false直接重新登录
+                return false;
             }
-        }).start();
+        }
+        return System.currentTimeMillis() - time > sessionTimeout * 4 / 5;
+
     }
 
 }
