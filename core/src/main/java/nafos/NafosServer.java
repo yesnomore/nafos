@@ -84,8 +84,6 @@ public class NafosServer {
         }
 
         nettyStartup = ac.getBean(NettyStartup.class);
-//        nafosServer = ac.getBean(NafosServer.class);
-//        nafosServer.setPort();
         setPort();
         InitMothods.init(ac);
 

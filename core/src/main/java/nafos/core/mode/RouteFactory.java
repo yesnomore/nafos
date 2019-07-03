@@ -39,8 +39,6 @@ public class RouteFactory {
 
     private static Class[] interceptors = null;
 
-    private static String projectPath = "";
-
 
     public RouteFactory(ApplicationContext context) {
         Map<String, Object> taskBeanMap = context.getBeansWithAnnotation(Controller.class);
@@ -60,13 +58,6 @@ public class RouteFactory {
     }
 
 
-    /**
-     * 设置项目路径，方便nginx等项目分发
-     * @param path
-     */
-    public static void setProjectPath(String path){
-        projectPath = path;
-    }
 
     /**
      * 判断类是不是路由Controller
@@ -79,7 +70,7 @@ public class RouteFactory {
         Controller controller = AnnotatedElementUtils.findMergedAnnotation(beanType, Controller.class);
         boolean isHandler = controller != null;
         if (isHandler) {
-            parentPath = projectPath + controller.value();
+            parentPath =  controller.value();
             if (controller.interceptor() != null) {
                 interceptors = controller.interceptor();
             }
@@ -162,7 +153,7 @@ public class RouteFactory {
      */
     private void httpRoutRecord(Method method, Class<?> handlerType, Handle handle) {
         MethodAccess ma = MethodAccess.get(handlerType);
-        String uri = "";
+        String uri;
         String methodType = handle.method() + ":";
         if (parentPath != null) {
             //有类层次的@Nuri注解,就对方法和类的url进行拼接
@@ -172,6 +163,7 @@ public class RouteFactory {
         }
         uri = methodType + uri;
 
+        logger.debug("register router:{}",uri);
         HTTPMETHODHANDLEMAP.put(uri, new HttpRouteClassAndMethod(handlerType, ma,
                 ma.getIndex(method.getName()), null,
                 handle.printLog(), handle.type() == Protocol.DEFAULT ? defaultProtocol : handle.type(), handle.runOnWorkGroup(), method.getParameters(), interceptors));
