@@ -34,7 +34,6 @@ public class JsonUtil {
     static {
         // 初始化
         objectMapper = new ObjectMapper();// jackson版本的json
-
         objectMapper.setVisibility(PropertyAccessor.FIELD, Visibility.ANY);
         objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -64,8 +63,6 @@ public class JsonUtil {
     public static ObjectMapper getObjectMapper() {
         return objectMapper;
     }
-
-
     public static ObjectMapper getObjectMapperNotNull() {
         return objectMapperNotNull;
     }
@@ -101,7 +98,6 @@ public class JsonUtil {
      * @return
      */
     public static <T> T json2Object(String jsonString, Class<T> clazz) {
-
         if (jsonString == null || "".equals(jsonString)) {
             return null;
         } else {

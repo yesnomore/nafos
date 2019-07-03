@@ -14,7 +14,7 @@ public class SecurityConfig {
     private boolean isUseRedis;
 
     //session过期时间，秒为单位
-    @Value("${nafos.security.sessionTimeOut:1800}")
+    @Value("${nafos.security.sessionTimeout:1800}")
     private int sessionTimeOut;
 
 
@@ -28,13 +28,6 @@ public class SecurityConfig {
     }
 
 
-    public void setUseRedis(boolean useRedis) {
-        isUseRedis = useRedis;
-    }
-
-    public void setSessionTimeOut(int sessionTimeOut) {
-        this.sessionTimeOut = sessionTimeOut;
-    }
 
 
 }

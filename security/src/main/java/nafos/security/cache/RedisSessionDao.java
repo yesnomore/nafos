@@ -28,7 +28,7 @@ public class RedisSessionDao {
 
     public static final String SESSIONKEY = "nafos:security:sessionId:";
 
-    public static final String SESSIONKEY_TIME = "nafos:security:sessionId:time";
+    public static final String SESSIONKEY_TIME = "nafos:security:sessionId:time:";
 
 
     static {
@@ -78,7 +78,7 @@ public class RedisSessionDao {
         if (sessionId == null) {
             throw BizException.LOGIN_SESSION_TIME_OUT;
         }
-        T t = (T) RedissonManager.getRedisson().getBucket(SESSIONKEY + sessionId);
+        T t = (T) RedissonManager.getRedisson().getBucket(SESSIONKEY + sessionId).get();
         return t;
     }
 
@@ -108,13 +108,12 @@ public class RedisSessionDao {
         }
         //设置过期时间
         RBatch batch = RedissonManager.getRedisson().createBatch();
-        RBucket<Object> bucket = (RBucket<Object>) batch.getBucket(SESSIONKEY + sessionId);
-        RBucket<Object> bucketTime = (RBucket<Object>) batch.getBucket(SESSIONKEY_TIME + sessionId);
-        bucket.set(obj);
-        bucket.expire(sessionTimeout, TimeUnit.SECONDS);
-        bucketTime.set(System.currentTimeMillis());
-        bucket.expire(sessionTimeout, TimeUnit.SECONDS);
+        batch.getBucket(SESSIONKEY + sessionId).setAsync(obj);
+        batch.getBucket(SESSIONKEY + sessionId).expireAsync(sessionTimeout, TimeUnit.SECONDS);
+        batch.getBucket(SESSIONKEY_TIME + sessionId).setAsync(System.currentTimeMillis());
+        batch.getBucket(SESSIONKEY_TIME + sessionId).expireAsync(sessionTimeout, TimeUnit.SECONDS);
         batch.execute();
+        SecurityUpdateListener.publishUpdate(sessionId);
     }
 
 

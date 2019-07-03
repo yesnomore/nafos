@@ -126,9 +126,12 @@ public class NsRequest extends BuildHttpObjectAggregator.AggregatedFullHttpReque
                 e.printStackTrace();
             }
         }
-
+        String nafosCookieAes = getCookie(cookieStart);
+        if(nafosCookieAes == null){
+            return null;
+        }
         //其他模拟器，安卓正常走流程
-        securityCookieId = AESUtil.decrypt(URLDecoder.decode(getCookie(cookieStart)));
+        securityCookieId = AESUtil.decrypt(URLDecoder.decode(nafosCookieAes));
         return securityCookieId;
     }
 

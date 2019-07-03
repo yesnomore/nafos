@@ -59,7 +59,7 @@ public class SecurityUtil {
      */
     public static void setLoginUser(String sessionId, Object obj) {
         CacheMapDao.saveCache(sessionId, obj);
-        CacheMapDao.saveCache(sessionId, System.currentTimeMillis());
+        CacheMapDao.saveTimeCache(sessionId, System.currentTimeMillis());
         if (isUseRedis) {
             RedisSessionDao.saveSession(sessionId, obj);
         }

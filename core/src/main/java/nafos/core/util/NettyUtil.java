@@ -10,7 +10,6 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.util.CharsetUtil;
 import nafos.core.Thread.ThreadLocalHelper;
 import nafos.core.entry.error.BizException;
-import net.sf.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,13 +21,9 @@ public class NettyUtil {
     private static final Logger logger = LoggerFactory.getLogger(NettyUtil.class);
 
     public static void sendError(ChannelHandlerContext ctx, HttpResponseStatus status) {
-        // 构造响应体
-        JSONObject object = new JSONObject();
-        object.put("error", status.code());
-        object.put("message", status.reasonPhrase());
         // 设置到response对象
         final FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, status,
-                Unpooled.copiedBuffer(object.toString(), CharsetUtil.UTF_8));
+                Unpooled.copiedBuffer(new BizException(status.code(),status.reasonPhrase()).toString(), CharsetUtil.UTF_8));
         response.headers().set("Access-Control-Allow-Origin", "*");
         response.headers().set(CONTENT_TYPE, "application/json;charset=UTF-8");
         response.headers().set(CONTENT_LENGTH, response.content().readableBytes());
@@ -49,13 +44,9 @@ public class NettyUtil {
 
 
     public static void sendOptions(ChannelHandlerContext ctx, HttpResponseStatus status) {
-        // 构造响应体
-        JSONObject object = new JSONObject();
-        object.put("data", 1);
-        object.put("status", status.toString());
         // 设置到response对象
         final FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, status,
-                Unpooled.copiedBuffer(object.toString(), CharsetUtil.UTF_8));
+                Unpooled.copiedBuffer("{}", CharsetUtil.UTF_8));
         //设置头部
         response.headers().set("Access-Control-Allow-Origin", "*");
         response.headers().set("Access-Control-Allow-Headers", "*");

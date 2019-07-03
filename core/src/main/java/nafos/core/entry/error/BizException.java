@@ -7,7 +7,7 @@ package nafos.core.entry.error;
  **/
 public class BizException extends RuntimeException {
 
-    private Integer status; //response.status 错误码
+    private Integer status = 400; //response.status 错误码
     private Integer error; //body 中返回的业务具体状态
     private String message;//具体错误信息
 
@@ -18,7 +18,6 @@ public class BizException extends RuntimeException {
 
     public BizException(String errmsg) {
         super(errmsg);
-        this.status = 400;
         this.message = errmsg;
     }
 

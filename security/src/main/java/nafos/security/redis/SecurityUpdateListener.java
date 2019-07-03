@@ -22,7 +22,7 @@ public class SecurityUpdateListener implements NafosRunner {
 
     private static boolean redisListenered = false;
     private static String securityListener = "nafos:security:listener";
-    private static RTopic topic = RedissonManager.getRedisson().getTopic(securityListener);
+    private static RTopic topic ;
 
     public static void publishDel(String sessionId){
         topic.publish(new SecurityUpdate("LoginSessionDelete",sessionId));
@@ -60,6 +60,7 @@ public class SecurityUpdateListener implements NafosRunner {
 
     @Override
     public void run() {
+        topic = RedissonManager.getRedisson().getTopic(securityListener);
         if (securityConfig.getIsUseRedis())
             runRedisListener();
     }
