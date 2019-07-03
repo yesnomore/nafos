@@ -10,15 +10,6 @@
 
     <dependencies>
 
-
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter</artifactId>
-            <version>2.1.4.RELEASE</version>
-            <scope>test</scope>
-        </dependency>
-
-
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-context</artifactId>
@@ -37,8 +28,6 @@
             <version>1.7.2</version>
             <scope>test</scope>
         </dependency>
-
-
         <!--  netty -->
         <dependency>
             <groupId>io.netty</groupId>
@@ -78,13 +67,18 @@
             <artifactId>commons-beanutils</artifactId>
             <version>1.9.3</version>
         </dependency>
-
         <dependency>
             <groupId>com.esotericsoftware</groupId>
             <artifactId>reflectasm</artifactId>
             <version>1.10.1</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter</artifactId>
+            <version>2.1.4.RELEASE</version>
+            <scope>test</scope>
+        </dependency>
 
     </dependencies>
 
