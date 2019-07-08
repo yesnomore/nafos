@@ -34,7 +34,7 @@ public class NsRespone extends DefaultFullHttpResponse {
     }
 
     public NsRespone setNafosCookieId(String value) {
-        cookies.add(new DefaultCookie("nafosCookie", URLEncoder.encode(value)));
+        cookies.add(new DefaultCookie("nafosCookie", URLEncoder.encode(AESUtil.encrypt(value))));
         return this;
     }
 
