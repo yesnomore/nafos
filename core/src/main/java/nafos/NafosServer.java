@@ -52,7 +52,7 @@ public class NafosServer {
 
     private Class runClazz;
 
-    private volatile boolean isInit = false;
+    private boolean isInit = false;
 
 
     public NafosServer() {
