@@ -20,7 +20,7 @@ public class Room {
 
     protected String nameSpace;
 
-    protected final ConcurrentHashMap<String, ConcurrentHashMap<String, Object>> userData = new ConcurrentHashMap<>();//房间中用户信息
+    protected final ConcurrentHashMap<Object, ConcurrentHashMap<String, Object>> userData = new ConcurrentHashMap<>();//房间中用户信息
 
     protected final ConcurrentHashMap<String, Object> roomData = new ConcurrentHashMap<>();//房间配置
 
@@ -48,9 +48,9 @@ public class Room {
      * @Description(清楚掉线的人)
      */
     public void clearUnActiveUser() {
-        List<String> l = new ArrayList<>();
+        List<Object> l = new ArrayList<>();
         for (Client client : clients) {
-            String userId = client.getUserId();
+            Object userId = client.getUserId();
             if (!client.getChannel().isActive()) {
                 removeUser(client);
                 userData.remove(userId);
@@ -145,7 +145,7 @@ public class Room {
 
     //客户端离开房间但是不删除房间信息，让机器人删除
     public void removeUserNotDelRoom(Client client) {
-        String userId = client.getUserId();
+        Object userId = client.getUserId();
         clients.remove(client);
         userData.remove(userId);
         for (BaseUser s : users) {
@@ -163,7 +163,7 @@ public class Room {
         }
     }
 
-    public boolean containsUsers(String userId) {
+    public boolean containsUsers(Object userId) {
         boolean isContain = false;
         for (BaseUser s : users) {
             if (s.getUserId().equals(userId)) {
@@ -188,7 +188,7 @@ public class Room {
     public void addClientAndUserData(Client client, Map<String, Object> map) {
         if (!clients.contains(client))
             clients.add(client);
-        String userId = client.getUserId();
+        Object userId = client.getUserId();
         for (String key : map.keySet()) {
             if (userData.containsKey(userId)) {
                 userData.get(userId).put(key, map.get(key));
@@ -200,21 +200,21 @@ public class Room {
         }
     }
 
-    public Object getUserDataOnKey(String userId, String key) {
+    public Object getUserDataOnKey(Object userId, String key) {
         return userData.get(userId).get(key);
     }
 
     public Object getUserDataOnKey(Client client, String key) {
-        String userId = client.getUserId();
+        Object userId = client.getUserId();
         return getUserDataOnKey(userId, key);
     }
 
-    public Map<String, Object> getUserData(String userId) {
+    public Map<String, Object> getUserData(Object userId) {
         return userData.get(userId);
     }
 
     public Map<String, Object> getUserData(Client client) {
-        String userId = client.getUserId();
+        Object userId = client.getUserId();
         return getUserData(userId);
     }
 
@@ -229,7 +229,7 @@ public class Room {
     }
 
     public void setUserDataOnkey(Client client, String key, Object object) {
-        String userId = client.getUserId();
+        Object userId = client.getUserId();
         if (userData.containsKey(userId)) {
             userData.get(userId).put(key, object);
             return;
@@ -255,7 +255,7 @@ public class Room {
         this.id = id;
     }
 
-    public ConcurrentHashMap<String, ConcurrentHashMap<String, Object>> getUserData() {
+    public ConcurrentHashMap<Object, ConcurrentHashMap<String, Object>> getUserData() {
         return userData;
     }
 

@@ -77,7 +77,7 @@ public class Client {
         channel.attr(AttributeKey.valueOf("token")).set(token);
     }
 
-    public String getUserId() {
+    public Object getUserId() {
         return this.gameUserInfo.getUserId();
     }
 

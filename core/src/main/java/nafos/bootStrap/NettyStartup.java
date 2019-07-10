@@ -43,6 +43,8 @@ public class NettyStartup {
     @Value("${nafos.readerIdleTime:5}")
     private long readerIdleTime;
 
+    private static long heartTimeout = 0L;
+
     @Autowired
     HttpPipelineAdd httpAdd;
     @Autowired
@@ -52,6 +54,16 @@ public class NettyStartup {
     @Autowired
     ByteArrayOutboundHandle byteToByteBufHandle;
 
+    public static void setHeartTimeout(long second){
+        heartTimeout = second;
+    }
+
+    public long getHeartTimeout(){
+        if(heartTimeout == 0L){
+            heartTimeout = readerIdleTime;
+        }
+        return heartTimeout;
+    }
 
     /**
      * 启动对应服务器
@@ -114,7 +126,7 @@ public class NettyStartup {
         } else {
             // 1.socket方式服务
             // 设置N秒没有读到数据，则触发一个READER_IDLE事件。
-            pipeline.addLast(new IdleStateHandler(readerIdleTime, 0, 0, TimeUnit.SECONDS));
+            pipeline.addLast(new IdleStateHandler(getHeartTimeout(), 0, 0, TimeUnit.SECONDS));
             pipeline.addLast("active", new ChannelActiveHandle());
 
             pipeline.addLast("socketChoose", new SocketChooseHandle());

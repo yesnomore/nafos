@@ -142,7 +142,7 @@ public class NafosServer {
 
 
     /**
-     * TODO 注册停机事件
+     * 注册停机事件
      *
      * @return
      */
@@ -154,7 +154,7 @@ public class NafosServer {
     }
 
     /**
-     * TODO 注册handle时间监听，millisecond 每多少毫秒打印一次记录
+     * 注册handle时间监听，millisecond 每多少毫秒打印一次记录
      *
      * @param millisecond
      * @return
@@ -168,7 +168,7 @@ public class NafosServer {
     }
 
     /**
-     * TODO 注册打印应用GC和线程日志，millisecond 每多少毫秒打印一次记录
+     * 注册打印应用GC和线程日志，millisecond 每多少毫秒打印一次记录
      *
      * @param millisecond
      * @return
@@ -181,7 +181,7 @@ public class NafosServer {
     }
 
     /**
-     * TODO 注册默认的通信协议
+     * 注册默认的通信协议
      *
      * @param protocol
      * @return
@@ -192,8 +192,8 @@ public class NafosServer {
     }
 
     /**
-     * TODO 注册socket连接，剔除不安全连接的时间
-     * TODO socket连接之后，需要对channel进行ChannelConnectManager.safe(channel) 处理，否则在这个时间后会断开连接。不设置默认不踢
+     * 注册socket连接，剔除不安全连接的时间
+     * socket连接之后，需要对channel进行ChannelConnectManager.safe(channel) 处理，否则在这个时间后会断开连接。不设置默认不踢
      *
      * @param millisecond
      * @return
@@ -207,13 +207,24 @@ public class NafosServer {
     }
 
     /**
-     * TODO 注册snowflakeIdWorker 唯一id注册器  （存在时间回拨问题，没有绝对唯一，但是日常应用不考虑。如有强制绝对，参考redis集中发id）
+     * 注册snowflakeIdWorker 唯一id注册器  （存在时间回拨问题，没有绝对唯一，但是日常应用不考虑。如有强制绝对，参考redis集中发id）
      *
      * @param workerId,queneceId
      * @return
      */
     public NafosServer registSnowFlake(long workerId, long queneceId) {
         SnowflakeIdWorker.init(workerId, queneceId);
+        return this;
+    }
+
+    /**
+     * 注册长连接心跳时长，默认5S
+     *
+     * @param second
+     * @return
+     */
+    public NafosServer registerScoketHeartTimeOut(long second) {
+        NettyStartup.setHeartTimeout(second);
         return this;
     }
 
