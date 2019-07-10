@@ -52,7 +52,7 @@ public class NafosServer {
 
     private Class runClazz;
 
-    private boolean isInit;
+    private volatile boolean isInit = false;
 
 
     public NafosServer() {
@@ -64,26 +64,26 @@ public class NafosServer {
     }
 
     private NafosServer init() {
-        synchronized (this) {
+        synchronized (this.getClass()) {
             if (isInit) {
                 return this;
             }
-            isInit = true;
-        }
-        ac = SpringApplicationContextHolder.getContext();
-        if (ac == null) {
-            if (AnnotationUtils.findAnnotation(runClazz, ComponentScan.class) == null) {
-                throw new IllegalStateException("startup class [" + runClazz.getName() + "] must be Annotation ComponentScan and choose scan package");
+            ac = SpringApplicationContextHolder.getContext();
+            if (ac == null) {
+                if (AnnotationUtils.findAnnotation(runClazz, ComponentScan.class) == null) {
+                    throw new IllegalStateException("startup class [" + runClazz.getName() + "] must be Annotation ComponentScan and choose scan package");
+                }
+                AnnotationConfigApplicationContext annoContext = new AnnotationConfigApplicationContext();
+                annoContext.register(runClazz);
+                annoContext.refresh();
+                ac = annoContext;
+            } else {
+                logger.info("ApplicationContext is running");
             }
-            AnnotationConfigApplicationContext annoContext = new AnnotationConfigApplicationContext();
-            annoContext.register(runClazz);
-            annoContext.refresh();
-            ac = annoContext;
-        } else {
-            logger.info("ApplicationContext is running");
+            isInit = true;
+            logger.info("context-init:"+ac);
+            nettyStartup = ac.getBean(NettyStartup.class);
         }
-
-        nettyStartup = ac.getBean(NettyStartup.class);
         setPort();
         InitMothods.init(ac);
 
@@ -106,7 +106,7 @@ public class NafosServer {
 
 
     /**
-     * TODO 启动HTTP和SOCKET服务
+     *  启动HTTP和SOCKET服务
      */
     public NafosServer startupAll() {
         return startupAll(httpPort, socketPort);
