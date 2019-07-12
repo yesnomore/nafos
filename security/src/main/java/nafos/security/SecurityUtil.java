@@ -122,6 +122,7 @@ public class SecurityUtil {
             }
             //附带的外置操作
             ClassAndMethod route = InitMothods.getFilter("sessionUpdate");
+            if(route == null) return;
             route.getMethod().invoke(SpringApplicationContextHolder.getSpringBeanForClass(route.getClazz()), route.getIndex(),
                     new Object[]{sessionId});
         }
