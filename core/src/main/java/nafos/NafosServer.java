@@ -7,8 +7,6 @@ import nafos.core.helper.SpringApplicationContextHolder;
 import nafos.core.mode.InitMothods;
 import nafos.core.mode.RouteFactory;
 import nafos.core.mode.runner.NafosRunnerExecute;
-import nafos.core.mode.shutdown.ShutDownHandleInterface;
-import nafos.core.mode.shutdown.ShutDownHandler;
 import nafos.core.monitor.RunWatch;
 import nafos.core.monitor.SystemMonitor;
 import nafos.core.monitor.UnSafeSocketChannel;
@@ -19,8 +17,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.PropertySource;
-import org.springframework.context.annotation.PropertySources;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.stereotype.Component;
 
@@ -146,10 +142,10 @@ public class NafosServer {
      *
      * @return
      */
-    public NafosServer registShutDown(ShutDownHandleInterface handleInterface) {
+
+    public NafosServer registShutDown(Runnable target) {
         //0.注册停机事件
-        ShutDownHandler shutDownHandler = new ShutDownHandler();
-        shutDownHandler.registerSignal(handleInterface);
+        Runtime.getRuntime().addShutdownHook(new Thread(target));
         return this;
     }
 
