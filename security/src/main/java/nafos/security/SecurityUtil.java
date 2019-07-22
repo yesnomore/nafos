@@ -8,10 +8,9 @@ import nafos.core.util.ObjectUtil;
 import nafos.security.cache.CacheMapDao;
 import nafos.security.cache.RedisSessionDao;
 import nafos.security.config.SecurityConfig;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Set;
 
 /**
  * @author 作者 huangxinyu
@@ -19,7 +18,6 @@ import java.util.*;
  * 安全操作工具类
  */
 public class SecurityUtil {
-    private static final Logger logger = LoggerFactory.getLogger(SecurityUtil.class);
 
     private static boolean isUseRedis;
 

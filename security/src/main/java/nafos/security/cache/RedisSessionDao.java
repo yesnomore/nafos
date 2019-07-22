@@ -33,6 +33,7 @@ public class RedisSessionDao {
 
     static {
         sessionTimeout = SpringApplicationContextHolder.getSpringBeanForClass(SecurityConfig.class).getSessionTimeOut();
+        logger.info("nafos:session保存时间：{},用户最后阶段活跃会自动刷新",sessionTimeout);
     }
 
 
