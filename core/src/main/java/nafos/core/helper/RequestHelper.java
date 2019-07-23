@@ -1,17 +1,16 @@
 package nafos.core.helper;
 
+import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.QueryStringDecoder;
+import io.netty.util.CharsetUtil;
 import nafos.core.Thread.ThreadLocalHelper;
 import nafos.core.annotation.http.RequestParam;
 import nafos.bootStrap.handle.http.NsRequest;
 import nafos.core.entry.HttpRouteClassAndMethod;
 import nafos.bootStrap.handle.http.NsRespone;
-import nafos.core.util.BeanToMapUtil;
-import nafos.core.util.CastUtil;
-import nafos.core.util.ObjectUtil;
-import nafos.core.util.ProtoUtil;
+import nafos.core.util.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -80,7 +79,16 @@ public class RequestHelper {
                     if (Map.class.isAssignableFrom(parameter.getType())) {
                         linkedList.add(nsRequest.getBodyParams());
                     } else {
-                        linkedList.add(BeanToMapUtil.mapToObject(nsRequest.getBodyParams(), parameter.getType()));
+                        //接受参数为实体类，json下直接json转（否则map无法转嵌套），fromdata用map转。
+                        String strContentType = nsRequest.headers().get("Content-Type");
+                        strContentType = ObjectUtil.isNotNull(strContentType) ? strContentType.trim() : "";
+                        if (strContentType.contains("application/json")) {
+                            ByteBuf jsonBuf = nsRequest.content();
+                            String jsonStr = jsonBuf.toString(CharsetUtil.UTF_8);
+                            linkedList.add(JsonUtil.json2Object(jsonStr,parameter.getType()));
+                        } else {
+                            linkedList.add(BeanToMapUtil.mapToObject(nsRequest.getFormParams(), parameter.getType()));
+                        }
                     }
                 }
                 continue;

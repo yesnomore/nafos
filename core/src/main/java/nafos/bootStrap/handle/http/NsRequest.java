@@ -157,7 +157,7 @@ public class NsRequest extends BuildHttpObjectAggregator.AggregatedFullHttpReque
     /**
      * 解析from表单数据（Content-Type = x-www-form-urlencoded）,默认格式
      */
-    private Map<String, Object> getFormParams() {
+    public Map<String, Object> getFormParams() {
         Map<String, Object> params = new HashMap<String, Object>();
         HttpPostRequestDecoder decoder = new HttpPostRequestDecoder(new DefaultHttpDataFactory(false), this);
         List<InterfaceHttpData> postData = decoder.getBodyHttpDatas();
@@ -173,7 +173,7 @@ public class NsRequest extends BuildHttpObjectAggregator.AggregatedFullHttpReque
     /**
      * 解析json数据（Content-Type = application/json）
      */
-    private Map<String, Object> getJSONParams() {
+    public Map<String, Object> getJSONParams() {
         ByteBuf jsonBuf = content();
         String jsonStr = jsonBuf.toString(CharsetUtil.UTF_8);
         if(jsonStr == null || jsonStr.trim().length() == 0) return new HashMap<>();
