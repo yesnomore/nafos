@@ -25,6 +25,9 @@ public class NettyUtil {
         final FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, status,
                 Unpooled.copiedBuffer(new BizException(status.code(),status.reasonPhrase()).toString(), CharsetUtil.UTF_8));
         response.headers().set("Access-Control-Allow-Origin", "*");
+        response.headers().set("Access-Control-Allow-Headers", "*");
+        response.headers().set("Access-Control-Allow-Credentials","true");
+        response.headers().set("Access-Control-Allow-Methods", "PUT,POST,GET,DELETE,OPTIONS");
         response.headers().set(CONTENT_TYPE, "application/json;charset=UTF-8");
         response.headers().set(CONTENT_LENGTH, response.content().readableBytes());
         ThreadLocalHelper.threadLocalRemove();
@@ -36,6 +39,9 @@ public class NettyUtil {
         final FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, HttpResponseStatus.valueOf(bizException.getStatus()),
                 Unpooled.copiedBuffer(bizException.toString(), CharsetUtil.UTF_8));
         response.headers().set("Access-Control-Allow-Origin", "*");
+        response.headers().set("Access-Control-Allow-Headers", "*");
+        response.headers().set("Access-Control-Allow-Credentials","true");
+        response.headers().set("Access-Control-Allow-Methods", "PUT,POST,GET,DELETE,OPTIONS");
         response.headers().set(HttpHeaderNames.CONTENT_TYPE, "application/json;charset=UTF-8");
         ThreadLocalHelper.threadLocalRemove();
         ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);

@@ -131,6 +131,7 @@ public class HttpRouteHandle {
         } catch (BizException e) {
             return e;
         } catch (Exception e) {
+            logger.error("程序异常：{}",e.toString());
             e.printStackTrace();
             return HttpResponseStatus.INTERNAL_SERVER_ERROR;
         }
